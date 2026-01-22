@@ -5,6 +5,7 @@ import {
   Body,
   UseInterceptors,
   Inject,
+  Param,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { RedisCacheInterceptor } from '../cache.interceptor';
@@ -23,6 +24,13 @@ export class ProductsController {
   findAll() {
     return this.productsService.findAll();
   }
+
+  @Get('/category/:category')
+  @UseInterceptors(RedisCacheInterceptor)
+  findByCategory(@Param('category') category: string) {
+    return this.productsService.findByCategory(category);
+  }
+
 
   @Post()
   async create(@Body() body: any) {

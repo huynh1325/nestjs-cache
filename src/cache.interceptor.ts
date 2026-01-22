@@ -20,7 +20,17 @@ export class RedisCacheInterceptor implements NestInterceptor {
     next: CallHandler,
   ): Promise<Observable<any>> {
     const req = context.switchToHttp().getRequest();
-    const key = `cache:${req.originalUrl}`;
+    const { params, query } = req;
+
+    let key = 'products';
+
+    if (params.category) {
+      key += `:category:${params.category}`;
+    }
+
+    // if (query.keyword) {
+    //   key += `:search:${query.keyword}`;
+    // }
 
     const cached = await this.cacheManager.get(key);
     if (cached) {

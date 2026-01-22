@@ -4,6 +4,12 @@ import { UpdateProductDto } from './dto/update-product.dto';
 
 @Injectable()
 export class ProductsService {
+   private products = [
+    { id: 1, name: 'iPhone 15', category: 'phone' },
+    { id: 2, name: 'Samsung S24', category: 'phone' },
+    { id: 3, name: 'MacBook Pro', category: 'laptop' },
+  ];
+
   async create(product: any) {
     return {
       id: Date.now(),
@@ -16,6 +22,13 @@ export class ProductsService {
       { id: 1, name: 'iPhone 15' },
       { id: 2, name: 'Samsung S24' },
     ];
+  }
+
+  async findByCategory(category: string) {
+    console.log('Query database...');
+    return this.products.filter(
+      (p) => p.category === category,
+    );
   }
 
   findOne(id: number) {
