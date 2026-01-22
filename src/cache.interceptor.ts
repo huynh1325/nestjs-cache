@@ -21,24 +21,22 @@ export class RedisCacheInterceptor implements NestInterceptor {
   ): Promise<Observable<any>> {
     const req = context.switchToHttp().getRequest();
     const { params, query } = req;
+    const page = query.page ?? '1';
+    const limit = query.limit ?? '5';
 
-    let key = 'products';
+    let key = `products:page:${page}:limit:${limit}`;
 
     if (params.category) {
       key += `:category:${params.category}`;
     }
 
-    // if (query.keyword) {
-    //   key += `:search:${query.keyword}`;
-    // }
-
     const cached = await this.cacheManager.get(key);
     if (cached) {
-      console.log('Return from cache');
+      console.log('Cache hit:', key);
       return of(cached);
     }
 
-    console.log('Cache miss, go to controller');
+    console.log('Cache miss:', key);
 
     return next.handle().pipe(
       tap(async (data) => {

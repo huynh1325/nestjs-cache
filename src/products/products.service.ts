@@ -4,31 +4,68 @@ import { UpdateProductDto } from './dto/update-product.dto';
 
 @Injectable()
 export class ProductsService {
-   private products = [
+  private products = [
     { id: 1, name: 'iPhone 15', category: 'phone' },
     { id: 2, name: 'Samsung S24', category: 'phone' },
-    { id: 3, name: 'MacBook Pro', category: 'laptop' },
+    { id: 3, name: 'Xiaomi 14', category: 'phone' },
+    { id: 4, name: 'Pixel 8', category: 'phone' },
+    { id: 5, name: 'MacBook Pro', category: 'laptop' },
+    { id: 6, name: 'Dell XPS', category: 'laptop' },
+    { id: 7, name: 'HP Spectre', category: 'laptop' },
+    { id: 8, name: 'Asus Zenbook', category: 'laptop' },
   ];
 
-  async create(product: any) {
-    return {
-      id: Date.now(),
-      ...product,
+  async create(body: any) {
+    const newProduct = {
+      id: this.products.length + 1,
+      ...body,
     };
-  }
-  async findAll() {
-    console.log('Query database...');
-    return [
-      { id: 1, name: 'iPhone 15' },
-      { id: 2, name: 'Samsung S24' },
-    ];
+
+    this.products.push(newProduct);
+
+    console.log('Product created:', newProduct);
+
+    return newProduct;
   }
 
-  async findByCategory(category: string) {
-    console.log('Query database...');
-    return this.products.filter(
+  
+  async findAll(page: number, limit: number) {
+    console.log('Query database: findAll');
+
+    const start = (page - 1) * limit;
+    const end = start + limit;
+
+    return {
+      page,
+      limit,
+      total: this.products.length,
+      data: this.products.slice(start, end),
+    };
+  }
+
+  async findByCategory(
+    category: string,
+    page: number,
+    limit: number,
+  ) {
+    console.log(
+      `Query database: findByCategory(${category})`,
+    );
+
+    const filtered = this.products.filter(
       (p) => p.category === category,
     );
+
+    const start = (page - 1) * limit;
+    const end = start + limit;
+
+    return {
+      category,
+      page,
+      limit,
+      total: filtered.length,
+      data: filtered.slice(start, end),
+    };
   }
 
   findOne(id: number) {
