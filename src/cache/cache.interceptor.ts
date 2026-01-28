@@ -3,17 +3,13 @@ import {
   NestInterceptor,
   ExecutionContext,
   CallHandler,
-  Inject,
 } from '@nestjs/common';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import type { Cache } from 'cache-manager';
 import { Observable, of, tap } from 'rxjs';
+import { CacheService } from './cache.service';
 
 @Injectable()
 export class RedisCacheInterceptor implements NestInterceptor {
-  constructor(
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
-  ) {}
+  constructor(private cacheService: CacheService) {}
 
   async intercept(
     context: ExecutionContext,
@@ -21,16 +17,17 @@ export class RedisCacheInterceptor implements NestInterceptor {
   ): Promise<Observable<any>> {
     const req = context.switchToHttp().getRequest();
     const { params, query } = req;
+
     const page = query.page ?? '1';
     const limit = query.limit ?? '5';
 
-    let key = `products:page:${page}:limit:${limit}`;
+    const key = this.cacheService.buildProductKey({
+      category: params.category,
+      page,
+      limit,
+    });
 
-    if (params.category) {
-      key += `:category:${params.category}`;
-    }
-
-    const cached = await this.cacheManager.get(key);
+    const cached = await this.cacheService.get(key);
     if (cached) {
       console.log('Cache hit:', key);
       return of(cached);
@@ -40,7 +37,7 @@ export class RedisCacheInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       tap(async (data) => {
-        await this.cacheManager.set(key, data, 60_000);
+        await this.cacheService.set(key, data, 60);
         console.log('Cached:', key);
       }),
     );

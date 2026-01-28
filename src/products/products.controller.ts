@@ -9,7 +9,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
-import { RedisCacheInterceptor } from '../cache.interceptor';
+import { RedisCacheInterceptor } from '../cache/cache.interceptor';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 
