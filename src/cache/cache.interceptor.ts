@@ -21,13 +21,14 @@ export class RedisCacheInterceptor implements NestInterceptor {
     const page = query.page ?? '1';
     const limit = query.limit ?? '5';
 
-    const key = this.cacheService.buildProductKey({
+    const key = await this.cacheService.buildProductKey({
       category: params.category,
       page,
       limit,
     });
 
     const cached = await this.cacheService.get(key);
+  
     if (cached) {
       console.log('Cache hit:', key);
       return of(cached);

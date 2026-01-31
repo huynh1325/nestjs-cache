@@ -4,6 +4,8 @@ import type { Cache } from 'cache-manager';
 
 @Injectable()
 export class CacheService {
+  private readonly PRODUCT_VERSION_KEY = 'products:version';
+
   constructor(
     @Inject(CACHE_MANAGER) private cache: Cache,
   ) {}
@@ -20,12 +22,14 @@ export class CacheService {
     await this.cache.del(key);
   }
 
-  buildProductKey(options: {
+  async buildProductKey(options: {
     category?: string;
     page: string;
     limit: string;
   }) {
-    let key = `products:page:${options.page}:limit:${options.limit}`;
+    const version = await this.getProductVersion();
+
+    let key = `products:v${version}:page:${options.page}:limit:${options.limit}`;
 
     if (options.category) {
       key += `:category:${options.category}`;
@@ -33,4 +37,23 @@ export class CacheService {
 
     return key;
   }
+
+  async getProductVersion(): Promise<number> {
+    const version = await this.cache.get<number>(this.PRODUCT_VERSION_KEY);
+
+    if (version === undefined || version === null) {
+      await this.cache.set(this.PRODUCT_VERSION_KEY, 1);
+      return 1;
+    }
+
+    return version;
+  }
+
+  async increaseProductVersion(): Promise<number> {
+    const current = await this.getProductVersion();
+    const next = current + 1;
+    await this.cache.set(this.PRODUCT_VERSION_KEY, next, 0);
+    return next;
+  }
+
 }

@@ -1,9 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { CacheService } from 'src/cache/cache.service';
 
 @Injectable()
 export class ProductsService {
+  constructor(
+    private readonly cacheService: CacheService,
+  ) {}
+
   private products = [
     { id: 1, name: 'iPhone 15', category: 'phone' },
     { id: 2, name: 'Samsung S24', category: 'phone' },
@@ -24,6 +29,8 @@ export class ProductsService {
     this.products.push(newProduct);
 
     console.log('Product created:', newProduct);
+
+    await this.cacheService.increaseProductVersion();
 
     return newProduct;
   }
